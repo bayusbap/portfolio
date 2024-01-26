@@ -1,1 +1,55 @@
+Option Explicit
+Sub InitialMeasDoc()
+'
+' InitialMeasDoc Macro
+' Creates an Initial Measuring Document
+'
+' Keyboard Shortcut: Ctrl+Shift+G
+
+    Dim EQUIP As Worksheet, ZCOMPSTAT As Worksheet, LSMW As Worksheet
+    Dim TotalRowLSMW As Long, TotalRowZCOMPSTAT As Long
+    Dim i As Integer, j As Integer
+
+    Set EQUIP = Sheets("01 EQUI")
+    Set ZCOMPSTAT = Sheets("02 ZCOMPSTAT")
+    Set LSMW = Sheets("LSMW")
+
+' Clears existing data in LSMW sheet
+    LSMW.Cells.Delete Shift:=xlUp
+
+' Adds headers for Equipment, LSMW TSN, and LSMW CSN
+    LSMW.Range("A1").Value = "Equipment"
+    LSMW.Range("C1:F1").Value = Array("MeasPoint", "Date", "Time", "TSN_Hours")
+    LSMW.Range("H1:K1").Value = Array("MeasPoint", "Date", "Time", "CSN_Cycles")
+
+' Creates a filter in the first row
+    LSMW.Rows(1).AutoFilter
+
+' Copies data from 01 EQUI to LSMW
+    EQUIP.Range("A2", EQUIP.Range("A2").End(xlDown)).Copy
+    LSMW.Range("A2").PasteSpecial Paste:=xlPasteValues
+    
+' Populates MeasPoint TSN and CSN
+    TotalRowLSMW = LSMW.Cells(2, 1).End(xlDown).Row
+    TotalRowZCOMPSTAT = ZCOMPSTAT.Cells(2, 8).End(xlDown).Row
+    
+    For i = 2 To TotalRowLSMW
+        For j = 2 To TotalRowZCOMPSTAT
+                If LSMW.Cells(i, 1).Value = ZCOMPSTAT.Cells(j, 8).Value And ZCOMPSTAT.Cells(j, 12) = "TSN Flying Hours" Then
+                    LSMW.Cells(i, 3).Resize(, 4).Value = Array(ZCOMPSTAT.Cells(j, 13).Value, "01.01.1900", "00:00:00", "0")
+                ElseIf LSMW.Cells(i, 1).Value = ZCOMPSTAT.Cells(j, 8).Value And ZCOMPSTAT.Cells(j, 12) = "TSN Flight Cycles" Then
+                    LSMW.Cells(i, 8).Resize(, 4).Value = Array(ZCOMPSTAT.Cells(j, 13).Value, "01.01.1900", "00:00:00", "0")
+            End If
+        Next j
+    Next i
+
+' Applies decoration
+    LSMW.Range("C1:F1,H1:K1").Font.Bold = True
+    LSMW.Range("C1:F1,H1:K1").Interior.ThemeColor = xlThemeColorDark1
+    LSMW.Range("C1:F1,H1:K1").Interior.TintAndShade = -0.249977111117893
+
+    LSMW.Cells.EntireColumn.AutoFit
+    
+End Sub
+
 
